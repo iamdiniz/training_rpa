@@ -13,10 +13,13 @@ meu_diretorio_download = "C:\\Users\\0180035\\Downloads"
 url = "https://demo.automationtesting.in/FileDownload.html"
 
 
-def identificar_arquivo(arquivos_antes, arquivo_baixado):
+def identificar_arquivo(arquivos_antes):
     try:
-        start_time = time.time()
+        arquivos_antes = set(os.listdir(meu_diretorio_download))
+        arquivo_baixado = None
         timeout = 30
+
+        start_time = time.time()
 
         while True:
             # Comparar arquivos atuais com os anteriores
@@ -26,8 +29,12 @@ def identificar_arquivo(arquivos_antes, arquivo_baixado):
             if novos_arquivos:
                 # Um novo arquivo foi detectado
                 arquivo_baixado = novos_arquivos.pop()
-                print(f"Arquivo baixado: {arquivo_baixado}")
-                break
+                if not arquivo_baixado.endswith(".crdownload"):  # Ignorar arquivos incompletos
+                    print(f"Arquivo baixado: {arquivo_baixado}")
+                    break
+                else:
+                    print(f"Arquivo incompleto detectado: {arquivo_baixado}. Aguardando...")
+                    arquivo_baixado = None
 
             elif time.time() - start_time > timeout:
                 print("Tempo limite excedido para o download.")
@@ -36,9 +43,9 @@ def identificar_arquivo(arquivos_antes, arquivo_baixado):
             print("Nenhum novo arquivo detectado ainda. Continuando...")
             time.sleep(1)
 
-        if arquivo_baixado: # SE FOR BAIXADO...
+        if arquivo_baixado:  # SE FOR BAIXADO...
             return os.path.join(meu_diretorio_download, arquivo_baixado)  # Retorna o caminho completo
-        else: # SE NÃO FOR BAIXADO...
+        else:  # SE NÃO FOR BAIXADO...
             return None
     except Exception as e:
         print("Erro inesperado: ", e)
@@ -88,19 +95,16 @@ def txt_para_pdf(caminho_txt, caminho_pdf):
     except Exception as e:
         print(f"Erro ao converter o arquivo: {e}")
 
-
-def main():
+def abrir_site():
     try:
         driver.get(url)
         driver.implicitly_wait(20)
         driver.maximize_window()
+    except Exception as e:
+        print("Erro inesperado ", e)
 
-        arquivos_antes = set(os.listdir(meu_diretorio_download))
-        arquivo_pdf_baixado = None
-        arquivo_txt_baixado = None
-
-        time.sleep(1)
-
+def clicar_em_download_para_baixar_pdf():
+    try:
         # Aguardar até que o campo de usuário esteja presente
         download_button = WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((
@@ -110,17 +114,11 @@ def main():
         )
 
         download_button.click()
+    except Exception as e:
+        print("Erro inesperado ", e)
 
-        time.sleep(5)
-
-        arquivo_pdf_baixado = identificar_arquivo(arquivos_antes, arquivo_pdf_baixado)
-
-        if arquivo_pdf_baixado:
-            texto_pdf = ler_pdf(arquivo_pdf_baixado)
-        else:
-            print("Nenhum arquivo baixado.")
-            sys.exit(1)
-
+def enviar_texto_para_campo_de_texto(texto_pdf):
+    try:
         campo_de_texto = WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((
                 By.XPATH, 
@@ -129,7 +127,11 @@ def main():
         )
 
         campo_de_texto.send_keys(texto_pdf[:1000])
+    except Exception as e:
+        print("Erro inesperado ", e)
 
+def clicar_em_gerar_arquivo():
+    try:
         generate_file_button = WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((
                 By.XPATH, 
@@ -138,7 +140,11 @@ def main():
         )
 
         generate_file_button.click()
+    except Exception as e:
+        print("Erro inesperado ", e)
 
+def clicar_em_download_para_gerar_pdf():
+    try:
         download_button = WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((
                 By.XPATH, 
@@ -146,23 +152,46 @@ def main():
             ))
         )
 
-        arquivos_antes2 = set(os.listdir(meu_diretorio_download))
-
         download_button.click()
+    except Exception as e:
+        print("Erro inesperado ", e)
 
-        arquivo_txt_baixado = identificar_arquivo(arquivos_antes2, arquivo_txt_baixado)
+def main():
+    try:
+        arquivo_pdf_baixado = None
+        arquivo_txt_baixado = None
 
-        if arquivo_txt_baixado:
+        abrir_site()
+        clicar_em_download_para_baixar_pdf()
+
+        meu_diretorio_antes_de_baixar_o_pdf = os.listdir(meu_diretorio_download)
+        arquivo_pdf_baixado = identificar_arquivo(meu_diretorio_antes_de_baixar_o_pdf)
+
+        if arquivo_pdf_baixado and os.path.exists(arquivo_pdf_baixado):
+            texto_pdf = ler_pdf(arquivo_pdf_baixado)
+        else:
+            print("Nenhum arquivo baixado.")
+            sys.exit(1)
+
+        enviar_texto_para_campo_de_texto(texto_pdf)
+
+        clicar_em_gerar_arquivo()
+
+        meu_diretorio_antes_de_baixar_o_txt = set(os.listdir(meu_diretorio_download))
+
+        clicar_em_download_para_gerar_pdf()     
+
+        arquivo_txt_baixado = identificar_arquivo(meu_diretorio_antes_de_baixar_o_txt)
+
+        if arquivo_txt_baixado and os.path.exists(arquivo_txt_baixado):
             txt_para_pdf(arquivo_txt_baixado, arquivo_pdf_baixado)
         else:
             print("Nenhum arquivo baixado.")
             sys.exit(1)
 
         driver.quit()
-
     except Exception as e:
         print("Erro inesperado: ", e)
-
 
 if __name__ == "__main__":
     try:
