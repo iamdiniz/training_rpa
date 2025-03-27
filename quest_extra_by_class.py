@@ -9,7 +9,7 @@ import time
 import os
 
 
-meu_diretorio_download = r"C:\\Users\\0180035\\Downloads"
+meu_diretorio_download = "/home/diniz/Downloads"
 url = "https://demo.automationtesting.in/FileDownload.html"
 
 
@@ -196,6 +196,7 @@ if __name__ == "__main__":
         else:
             print("Nenhum arquivo TXT válido baixado.")
             sys.exit(1)
+        
 
     except Exception as e:
         print("Erro inesperado: ", e)

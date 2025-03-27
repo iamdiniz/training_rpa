@@ -36,11 +36,11 @@ precos_html = WebDriverWait(driver, 30).until(
 
 time.sleep(5)
 
-titulos = [titulo.text.strip() for titulo in titulos_h3 if titulo.text.strip()][:5]
+titulos = [titulo.text.strip() for titulo in titulos_h3 if titulo.text.strip()][:3]
 
-precos = [link.text.strip() for link in precos_html if link.text.strip()][:5]
+precos = [link.text.strip() for link in precos_html if link.text.strip()][:3]
 
-for titulo, preco in zip(titulos, precos):
-    print(f"{titulo} - R${preco}")
+for count, (titulo, preco) in enumerate(zip(titulos, precos), start=1):
+    print(f"{count}. {titulo} - R${preco}")
 
 driver.quit()

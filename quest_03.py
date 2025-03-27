@@ -34,7 +34,10 @@ titulos = [titulo.text.strip() for titulo in titulos_h3 if titulo.text.strip()][
 
 links = [link.text.strip() for link in tags_links if link.text.strip()][:5]
 
+count = 0
+
 for titulo, link in zip(titulos, links):
-    print(f"{titulo} - {link}")
+    count += 1
+    print(f"{count}. {titulo} - {link}")
 
 driver.quit()

@@ -9,7 +9,7 @@ import time
 import os
 
 driver = webdriver.Chrome()
-meu_diretorio_download = "C:\\Users\\0180035\\Downloads"
+meu_diretorio_download = "/home/diniz/Downloads"
 url = "https://demo.automationtesting.in/FileDownload.html"
 
 
