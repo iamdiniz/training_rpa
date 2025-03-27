@@ -9,7 +9,7 @@ import time
 import os
 
 
-meu_diretorio_download = "C:\\Users\\0180035\\Downloads"
+meu_diretorio_download = r"C:\\Users\\0180035\\Downloads"
 url = "https://demo.automationtesting.in/FileDownload.html"
 
 
@@ -46,8 +46,11 @@ class MainBot:
 
     def identify_pdf_file(self, arquivos_antes):
         try:
-            start_time = time.time()
+            arquivos_antes = set(os.listdir(meu_diretorio_download))
+            arquivo_baixado = None
             timeout = 30
+
+            start_time = time.time()
 
             while True:
                 # Comparar arquivos atuais com os anteriores
@@ -57,8 +60,12 @@ class MainBot:
                 if novos_arquivos:
                     # Um novo arquivo foi detectado
                     arquivo_baixado = novos_arquivos.pop()
-                    print(f"Arquivo baixado: {arquivo_baixado}")
-                    break
+                    if not arquivo_baixado.endswith(".crdownload"):  # Ignorar arquivos incompletos
+                        print(f"Arquivo baixado: {arquivo_baixado}")
+                        break
+                    else:
+                        print(f"Arquivo incompleto detectado: {arquivo_baixado}. Aguardando...")
+                        arquivo_baixado = None
 
                 elif time.time() - start_time > timeout:
                     print("Tempo limite excedido para o download.")
@@ -67,12 +74,13 @@ class MainBot:
                 print("Nenhum novo arquivo detectado ainda. Continuando...")
                 time.sleep(1)
 
-            if arquivo_baixado: # SE FOR BAIXADO...
+            if arquivo_baixado:  # SE FOR BAIXADO...
                 return os.path.join(meu_diretorio_download, arquivo_baixado)  # Retorna o caminho completo
-            else: # SE NÃO FOR BAIXADO...
+            else:  # SE NÃO FOR BAIXADO...
                 return None
         except Exception as e:
             print("Erro inesperado: ", e)
+            return None
 
 
     def read_pdf_file(self, pdf_path):
@@ -164,17 +172,15 @@ if __name__ == "__main__":
     try:
         bot = MainBot()
         bot.open_site()
-        meu_diretorio_antes_de_baixar_o_pdf = set(os.listdir(meu_diretorio_download))
+        meu_diretorio_antes_de_baixar_o_pdf = os.listdir(meu_diretorio_download)
         bot.download_pdf_file()
-        time.sleep(5)
 
-        arquivo_pdf_baixado = None
         arquivo_pdf_baixado = bot.identify_pdf_file(meu_diretorio_antes_de_baixar_o_pdf)
 
-        if arquivo_pdf_baixado:
+        if arquivo_pdf_baixado and os.path.exists(arquivo_pdf_baixado):
             texto_pdf = bot.read_pdf_file(arquivo_pdf_baixado)
         else:
-            print("Nenhum arquivo baixado.")
+            print("Nenhum arquivo PDF válido baixado.")
             sys.exit(1)
 
         bot.send_text_to_field_text(texto_pdf)
@@ -183,15 +189,13 @@ if __name__ == "__main__":
 
         meu_diretorio_antes_de_baixar_o_txt = set(os.listdir(meu_diretorio_download))
 
-        arquivo_txt_baixado = None
-        arquivo_txt_baixado = bot.identify_pdf_file(meu_diretorio_antes_de_baixar_o_pdf)
+        arquivo_txt_baixado = bot.identify_pdf_file(meu_diretorio_antes_de_baixar_o_txt)
 
-        if arquivo_txt_baixado:
+        if arquivo_txt_baixado and os.path.exists(arquivo_txt_baixado):
             bot.convert_txt_to_pdf(arquivo_txt_baixado, arquivo_pdf_baixado)
         else:
-            print("Nenhum arquivo baixado.")
+            print("Nenhum arquivo TXT válido baixado.")
             sys.exit(1)
 
-        time.sleep(5)
     except Exception as e:
         print("Erro inesperado: ", e)
